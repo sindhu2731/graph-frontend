@@ -4,7 +4,7 @@ import Sigma from "sigma";
 import Graph from "graphology";
 
 const API_URL =
-  process.env.REACT_APP_API_URL || "http://localhost:8000";
+  import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 export default function GraphView() {
   const containerRef = useRef(null);
@@ -12,13 +12,11 @@ export default function GraphView() {
   useEffect(() => {
     let sigmaInstance = null;
 
-    axios
-      .get(`${API_URL}/graph`)
+    axios.get(`${API_URL}/graph`)
       .then((response) => {
         const data = response.data;
         const graph = new Graph();
 
-        // Add nodes
         data.nodes.forEach((node) => {
           graph.addNode(node.id, {
             label: node.label,
@@ -29,11 +27,8 @@ export default function GraphView() {
           });
         });
 
-        // Add edges
         data.edges.forEach((edge) => {
-          graph.addEdge(edge.source, edge.target, {
-            id: edge.id,
-          });
+          graph.addEdge(edge.source, edge.target);
         });
 
         sigmaInstance = new Sigma(graph, containerRef.current);
@@ -42,11 +37,7 @@ export default function GraphView() {
         console.error("Error fetching graph:", error);
       });
 
-    return () => {
-      if (sigmaInstance) {
-        sigmaInstance.kill();
-      }
-    };
+    return () => sigmaInstance?.kill();
   }, []);
 
   return (
